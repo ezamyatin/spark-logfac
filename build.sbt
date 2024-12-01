@@ -8,7 +8,7 @@ lazy val root = (project in file("."))
 
 parallelExecution in ThisBuild := false
 fork := true
-javaOptions += "-Dlog4j2.configurationFile=file:/Users/e.zamyatin/vk/spark-logfac/src/test/resources/log4j2.properties"
+javaOptions += "-Dlog4j2.configurationFile=file:./src/test/resources/log4j2.properties"
 
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % "3.3.3",
