@@ -1,6 +1,6 @@
 # spark-logfac
 ## Logistic Matrix Factorization over Spark
-The package contains matrix factorization algorithms with a logistic loss function:
+The package contains highly scalable matrix factorization algorithms with a logistic loss function:
 - LMF [1]
 - Item2Vec [2]
 
