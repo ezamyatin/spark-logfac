@@ -66,11 +66,11 @@ private[recommendation] trait Item2VecModelParams extends Params
         // Checks if number within Long range and has no fractional part.
         when(column.isNull || column =!= casted,
           raise_error(concat(
-            lit(s"LMF only supports non-Null values in Long range and " +
+            lit(s"Item2Vec only supports non-Null values in Long range and " +
               s"without fractional part for column $colName, but got "), column)))
           .otherwise(casted)
 
-      case other => throw new IllegalArgumentException(s"LMF only supports values in " +
+      case other => throw new IllegalArgumentException(s"Item2Vec only supports values in " +
         s"Long range for column $colName, but got type $other.")
     }
   }
