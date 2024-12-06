@@ -1,12 +1,10 @@
-lazy val root = (project in file("."))
-  .settings(
-    name := "spark-logfac",
-    organization := "com.github.ezamyatin",
-    version := "0.1.0",
-    scalaVersion := "2.12.19"
-  )
-
-parallelExecution in ThisBuild := false
+name := "spark-logfac"
+version := "0.1.0"
+description := "Logistic Matrix Factorization over Spark"
+organization := "com.github.ezamyatin"
+scalaVersion := "2.12.19"
+publishMavenStyle := true
+parallelExecution := false
 fork := true
 javaOptions += "-Dlog4j2.configurationFile=file:./src/test/resources/log4j2.properties"
 
