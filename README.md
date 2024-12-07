@@ -10,13 +10,11 @@ On each subiteration, only those pairs whose embeddings of both elements are pre
 
 Within the subiteration, local SGD is performed. The key difficulty here is negative sampling for implicit approaches. To solve this problem we used the method described in the paper "Distributed negative sampling for word embeddings" [3], the essence of which is that to use embeddings available at the executor.
 
-## Package
-```{shell}
-# run tests
-> sbt test
+## Setup
+```scala
+resolvers += "Spark Packages Repo" at "https://repos.spark-packages.org/"
 
-# make a packaged jar
-> sbt package
+libraryDependencies += "ezamyatin" % "spark-logfac" % "0.1.0"
 ```
 
 ## References
