@@ -89,7 +89,6 @@ private[recommendation] trait Item2VecModelParams extends Params
   /**
    * Validate and transform the input schema.
    */
-
   protected def validateAndTransformSchema(schema: StructType): StructType = {
     SchemaUtils.checkColumnType(schema, $(inputCol), new ArrayType(LongType, false))
     SchemaUtils.appendColumn(schema, $(outputCol), new ArrayType(FloatType, false))
@@ -230,7 +229,6 @@ private[recommendation] trait Item2VecParams extends Item2VecModelParams
  * @param itemFactors a DataFrame that stores item factors in three columns: `id`, `features`
  *                    and `intercept`
  */
-
 class Item2VecModel private[ml] (
                               override val uid: String,
                               val rank: Int,
@@ -239,22 +237,18 @@ class Item2VecModel private[ml] (
   extends Model[Item2VecModel] with Item2VecModelParams with MLWritable {
 
   /** @group setParam */
-
   def setInputCol(value: String): this.type = set(inputCol, value)
 
   /** @group setParam */
-
   def setOutputCol(value: String): this.type = set(outputCol, value)
 
   /** @group setParam */
-
   def setNumPartitions(value: Int): this.type = set(numPartitions, value)
 
   /**
    * Transform a sequence column to a vector column to represent the whole sequence. The transform
    * is performed by averaging all item vectors it contains.
    */
-
   override def transform(dataset: Dataset[_]): DataFrame = {
     import dataset.sqlContext.implicits._
 
@@ -403,7 +397,6 @@ object Item2VecModel extends MLReadable[Item2VecModel] {
  * "Distributed negative sampling for word embeddings" available at
  * https://ojs.aaai.org/index.php/AAAI/article/view/10931/10790.
  */
-
 class Item2Vec( override val uid: String)
   extends Estimator[Item2VecModel] with Item2VecParams
   with DefaultParamsWritable {
@@ -412,75 +405,57 @@ class Item2Vec( override val uid: String)
   def this() = this(Identifiable.randomUID("Item2Vec"))
 
   /** @group setParam */
-
   def setRank(value: Int): this.type = set(rank, value)
 
   /** @group setParam */
-
   def setNegative(value: Int): this.type = set(negative, value)
 
   /** @group setParam */
-
   def setWindowSize(value: Int): this.type = set(windowSize, value)
 
   /** @group setParam */
-
   def setSamplingMode(value: String): this.type = set(samplingMode, value)
 
   /** @group setParam */
-
   def setInputCol(value: String): this.type = set(inputCol, value)
 
   /** @group setParam */
-
   def setOutputCol(value: String): this.type = set(outputCol, value)
 
   /** @group setParam */
-
   def setMaxIter(value: Int): this.type = set(maxIter, value)
 
   /** @group setParam */
-
   def setStepSize(value: Double): this.type = set(stepSize, value)
 
   /** @group setParam */
-
   def setParallelism(value: Int): this.type = set(parallelism, value)
 
   /** @group setParam */
-
   def setNumPartitions(value: Int): this.type = set(numPartitions, value)
 
   /** @group setParam */
-
   def setMinCount(value: Int): this.type = set(minCount, value)
 
   /** @group setParam */
-
   def setFitIntercept(value: Boolean): this.type = set(fitIntercept, value)
 
   /** @group setParam */
-
   def setRegParam(value: Double): this.type = set(regParam, value)
 
   /** @group setParam */
-
   def setPow(value: Double): this.type = set(pow, value)
 
   /** @group setParam */
-
   def setCheckpointInterval(value: Int): this.type = set(checkpointInterval, value)
 
   /** @group setParam */
-
   def setSeed(value: Long): this.type = set(seed, value)
 
   /** @group expertSetParam */
-
   def setIntermediateStorageLevel(value: String): this.type = set(intermediateStorageLevel, value)
 
   /** @group expertSetParam */
-
   def setFinalStorageLevel(value: String): this.type = set(finalStorageLevel, value)
 
 

@@ -302,7 +302,6 @@ private[recommendation] trait LMFParams extends LMFModelParams with HasMaxIter
  * @param itemFactors a DataFrame that stores item factors in three columns: `id`, `features`
  *                    and `intercept`
  */
-
 class LMFModel private[ml] (
                               override val uid: String,
                               val rank: Int,
@@ -311,19 +310,15 @@ class LMFModel private[ml] (
   extends Model[LMFModel] with LMFModelParams with MLWritable {
 
   /** @group setParam */
-
   def setUserCol(value: String): this.type = set(userCol, value)
 
   /** @group setParam */
-
   def setItemCol(value: String): this.type = set(itemCol, value)
 
   /** @group setParam */
-
   def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
   /** @group expertSetParam */
-
   def setColdStartStrategy(value: String): this.type = set(coldStartStrategy, value)
 
   private val predict = udf { (featuresA: Seq[Float], interceptA: Float,
@@ -469,7 +464,6 @@ object LMFModel extends MLReadable[LMFModel] {
  *
  * @param uid
  */
-
 class LMF( override val uid: String) extends Estimator[LMFModel] with LMFParams
   with DefaultParamsWritable {
 
@@ -477,105 +471,81 @@ class LMF( override val uid: String) extends Estimator[LMFModel] with LMFParams
   def this() = this(Identifiable.randomUID("lmf"))
 
   /** @group setParam */
-
   def setRank(value: Int): this.type = set(rank, value)
 
   /** @group setParam */
-
   def setNegative(value: Int): this.type = set(negative, value)
 
   /** @group setParam */
-
   def setImplicitPrefs(value: Boolean): this.type = set(implicitPrefs, value)
 
   /** @group setParam */
-
   def setUserCol(value: String): this.type = set(userCol, value)
 
   /** @group setParam */
-
   def setItemCol(value: String): this.type = set(itemCol, value)
 
   /** @group setParam */
-
   def setLabelCol(value: String): this.type = set(labelCol, value)
 
   /** @group setParam */
-
   def setWeightCol(value: String): this.type = set(weightCol, value)
 
   /** @group setParam */
-
   def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
   /** @group setParam */
-
   def setMaxIter(value: Int): this.type = set(maxIter, value)
 
   /** @group setParam */
-
   def setStepSize(value: Double): this.type = set(stepSize, value)
 
   /** @group setParam */
-
   def setParallelism(value: Int): this.type = set(parallelism, value)
 
   /** @group setParam */
-
   def setNumPartitions(value: Int): this.type = set(numPartitions, value)
 
   /** @group setParam */
-
   def setMinUserCount(value: Int): this.type = set(minUserCount, value)
 
   /** @group setParam */
-
   def setMinItemCount(value: Int): this.type = set(minItemCount, value)
 
   /** @group setParam */
-
   def setFitIntercept(value: Boolean): this.type = set(fitIntercept, value)
 
   /**
    * Set the same regularization value for users and items.
    *
    * @group setParam */
-
   def setRegParam(value: Double): this.type = {
     set(regParamI, value)
     set(regParamU, value)
   }
 
   /** @group setParam */
-
   def setCheckpointInterval(value: Int): this.type = set(checkpointInterval, value)
 
   /** @group setParam */
-
   def setSeed(value: Long): this.type = set(seed, value)
 
   /** @group expertSetParam */
-
   def setPow(value: Double): this.type = set(pow, value)
 
   /** @group expertSetParam */
-
   def setRegParamU(value: Double): this.type = set(regParamU, value)
 
   /** @group expertSetParam */
-
   def setRegParamI(value: Double): this.type = set(regParamI, value)
 
   /** @group expertSetParam */
-
   def setIntermediateStorageLevel(value: String): this.type = set(intermediateStorageLevel, value)
 
   /** @group expertSetParam */
-
   def setFinalStorageLevel(value: String): this.type = set(finalStorageLevel, value)
 
   /** @group expertSetParam */
-
   def setColdStartStrategy(value: String): this.type = set(coldStartStrategy, value)
 
   override def fit(dataset: Dataset[_]): LMFModel = instrumented { instr =>
