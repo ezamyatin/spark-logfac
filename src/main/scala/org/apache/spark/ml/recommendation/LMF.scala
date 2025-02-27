@@ -548,7 +548,13 @@ class LMF( override val uid: String) extends Estimator[LMFModel] with LMFParams
   /** @group expertSetParam */
   def setColdStartStrategy(value: String): this.type = set(coldStartStrategy, value)
 
-  override def fit(dataset: Dataset[_]): LMFModel = instrumented { instr =>
+  override def fit(dataset: Dataset[_]): LMFModel = {
+    fit(dataset, None, None)
+  }
+
+  def fit(dataset: Dataset[_],
+          frozenL: Option[Dataset[_]],
+          frozenR: Option[Dataset[_]]): LMFModel = instrumented { instr =>
     transformSchema(dataset.schema)
     import dataset.sparkSession.implicits._
 
@@ -598,13 +604,19 @@ class LMF( override val uid: String) extends Estimator[LMFModel] with LMFParams
       fitIntercept, implicitPrefs, intermediateStorageLevel, finalStorageLevel,
       checkpointInterval)
 
+    val rddFrozenL = frozenL.map(_.select("id", "features", "intercept")
+      .as[(Long, Array[Float], Float)].rdd)
+
+    val rddFrozenR = frozenR.map(_.select("id", "features", "intercept")
+      .as[(Long, Array[Float], Float)].rdd)
+
     val result = new LMF.Backend($(rank), $(negative), $(maxIter), $(stepSize),
       $(parallelism), $(numPartitions), $(pow),
       $(minUserCount), $(minItemCount), $(regParamU), $(regParamI), $(fitIntercept),
       $(implicitPrefs), get(labelCol).isDefined, get(weightCol).isDefined,
       $(seed), StorageLevel.fromString($(intermediateStorageLevel)),
       StorageLevel.fromString($(finalStorageLevel)), get(checkpointInterval).getOrElse(-1))
-      .train(ratings, None, None)(dataset.sqlContext)
+      .train(ratings, rddFrozenL, rddFrozenR)(dataset.sqlContext)
 
     ratings.unpersist()
 

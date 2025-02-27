@@ -113,14 +113,14 @@ private[ml] abstract class LogFacBase[T](
       checkpointInterval != -1 && (iter % checkpointInterval == 0)
 
   private[recommendation] def train(data: RDD[T],
-                                    frozenL: Option[RDD[(Long, (Array[Float], Float))]],
-                                    frozenR: Option[RDD[(Long, (Array[Float], Float))]]
+                                    frozenL: Option[RDD[(Long, Array[Float], Float)]],
+                                    frozenR: Option[RDD[(Long, Array[Float], Float)]]
                                    )(implicit sqlc: SQLContext): RDD[ItemData] = {
     val cached = ArrayBuffer.empty[RDD[ItemData]]
     var emb = initialize(data)
 
     emb = frozenL.fold(emb)(frozen => emb.keyBy(i => i.id -> i.t)
-      .leftOuterJoin(frozen.map(i => (i._1 -> ItemData.TYPE_LEFT) -> i._2)).values
+      .leftOuterJoin(frozen.map(i => (i._1 -> ItemData.TYPE_LEFT) -> (i._2, i._3))).values
       .map{v => v._2.foreach{x =>
         System.arraycopy(x._1, 0, v._1.f, 0, dotVectorSize)
         if (useBias) {
@@ -129,7 +129,7 @@ private[ml] abstract class LogFacBase[T](
       }; v._1})
 
     emb = frozenR.fold(emb)(frozen => emb.keyBy(i => i.id -> i.t)
-      .leftOuterJoin(frozen.map(i => (i._1 -> ItemData.TYPE_RIGHT) -> i._2)).values
+      .leftOuterJoin(frozen.map(i => (i._1 -> ItemData.TYPE_RIGHT) -> (i._2, i._3))).values
       .map{v => v._2.foreach{x =>
         System.arraycopy(x._1, 0, v._1.f, 0, dotVectorSize)
         if (useBias) {
