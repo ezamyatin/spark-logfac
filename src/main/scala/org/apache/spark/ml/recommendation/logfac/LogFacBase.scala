@@ -100,6 +100,13 @@ private[ml] abstract class LogFacBase[T](
       }
     }
 
+  private def checkpoint(rdd: RDD[ItemData])(implicit sqlc: SQLContext): (RDD[ItemData], String) = {
+    import sqlc.implicits._
+    val path = sqlc.sparkContext.getCheckpointDir.get + "/" + scala.util.Random.nextLong()
+    rdd.toDF().write.parquet(path)
+    sqlc.read.parquet(path).as[ItemData].rdd -> path
+  }
+
   private def shouldCheckpoint(iter: Int)(
     implicit sqlc: SQLContext): Boolean =
     sqlc.sparkContext.checkpointDir.isDefined &&
@@ -170,11 +177,10 @@ private[ml] abstract class LogFacBase[T](
         cached += emb
 
         if (shouldCheckpoint(checkpointIter + 1)) {
-          emb.count()
-          emb.checkpoint()
-          emb.cleanShuffleDependencies()
+          val (newEmb, newCheckpointFile) = checkpoint(emb)
+          emb = newEmb
           deletePreviousCheckpointFile(previousCheckpointFile)
-          previousCheckpointFile = emb.getCheckpointFile
+          previousCheckpointFile = Some(newCheckpointFile)
           cached.foreach(_.unpersist())
           cached.clear()
         }
