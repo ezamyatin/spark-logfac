@@ -112,9 +112,32 @@ private[ml] abstract class LogFacBase[T](
     sqlc.sparkContext.checkpointDir.isDefined &&
       checkpointInterval != -1 && (iter % checkpointInterval == 0)
 
-  private[recommendation] def train(data: RDD[T])(implicit sqlc: SQLContext): RDD[ItemData] = {
+  private[recommendation] def train(data: RDD[T],
+                                    frozenL: Option[RDD[(Long, (Array[Float], Float))]],
+                                    frozenR: Option[RDD[(Long, (Array[Float], Float))]]
+                                   )(implicit sqlc: SQLContext): RDD[ItemData] = {
     val cached = ArrayBuffer.empty[RDD[ItemData]]
-    var emb = cacheAndCount(initialize(data))
+    var emb = initialize(data)
+
+    emb = frozenL.fold(emb)(frozen => emb.keyBy(i => i.id -> i.t)
+      .leftOuterJoin(frozen.map(i => (i._1 -> ItemData.TYPE_LEFT) -> i._2)).values
+      .map{v => v._2.foreach{x =>
+        System.arraycopy(x._1, 0, v._1.f, 0, dotVectorSize)
+        if (useBias) {
+          v._1.f(dotVectorSize) = x._2
+        }
+      }; v._1})
+
+    emb = frozenR.fold(emb)(frozen => emb.keyBy(i => i.id -> i.t)
+      .leftOuterJoin(frozen.map(i => (i._1 -> ItemData.TYPE_RIGHT) -> i._2)).values
+      .map{v => v._2.foreach{x =>
+        System.arraycopy(x._1, 0, v._1.f, 0, dotVectorSize)
+        if (useBias) {
+          v._1.f(dotVectorSize) = x._2
+        }
+      }; v._1})
+
+    emb = cacheAndCount(emb)
     cached += emb
 
     var checkpointIter = 0
@@ -162,10 +185,12 @@ private[ml] abstract class LogFacBase[T](
           val opts = if (implicitPrefs) {
             Opts.implicitOpts(dotVectorSize, useBias, negative, pow.toFloat,
               learningRate.toFloat, lambdaU.toFloat, lambdaI.toFloat,
-              gamma.toFloat, verbose = false)
+              gamma.toFloat, verbose = false,
+              frozenL.isDefined, frozenR.isDefined)
           } else {
             Opts.explicitOpts(dotVectorSize, useBias, learningRate.toFloat,
-              lambdaU.toFloat, lambdaI.toFloat, verbose = false)
+              lambdaU.toFloat, lambdaI.toFloat, verbose = false,
+              frozenL.isDefined, frozenR.isDefined)
           }
           val sg = Optimizer(opts, eItLR)
 

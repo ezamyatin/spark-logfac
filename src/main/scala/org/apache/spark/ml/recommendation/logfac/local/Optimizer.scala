@@ -291,24 +291,35 @@ private[ml] class Optimizer(private val opts: Opts,
             }
           }
 
-          if (opts.lambdaL > 0 && label > 0) {
+          if (opts.lambdaL > 0 && label > 0 && !opts.frozenL) {
             blas.saxpy(opts.dim, -opts.lambdaL * weight * opts.lr, syn0, l1, 1, neu1e, 0, 1)
           }
-          blas.saxpy(opts.dim, g, syn1neg, l2, 1, neu1e, 0, 1)
-          if (opts.useBias) {
+
+          if (!opts.frozenL) {
+            blas.saxpy(opts.dim, g, syn1neg, l2, 1, neu1e, 0, 1)
+          }
+
+          if (opts.useBias && !opts.frozenL) {
             neu1e(opts.dim) += g * 1
           }
 
-          if (opts.lambdaR > 0 && label > 0) {
+          if (opts.lambdaR > 0 && label > 0 && !opts.frozenR) {
             blas.saxpy(opts.dim, -opts.lambdaR * weight * opts.lr, syn1neg, l2, 1, syn1neg, l2, 1)
           }
-          blas.saxpy(opts.dim, g, syn0, l1, 1, syn1neg, l2, 1)
-          if (opts.useBias) {
+
+          if (!opts.frozenR) {
+            blas.saxpy(opts.dim, g, syn0, l1, 1, syn1neg, l2, 1)
+          }
+
+          if (opts.useBias && !opts.frozenR) {
             syn1neg(l2 + opts.dim) += g * 1
           }
           d += 1
         }
-        blas.saxpy(opts.vectorSize, 1.0f, neu1e, 0, 1, syn0, l1, 1)
+
+        if (!opts.frozenL) {
+          blas.saxpy(opts.vectorSize, 1.0f, neu1e, 0, 1, syn0, l1, 1)
+        }
       }
       pos += 1
     }
@@ -367,22 +378,33 @@ private[ml] class Optimizer(private val opts: Opts,
           llossnReg += 1
         }
 
-        if (opts.lambdaL > 0) {
+        if (opts.lambdaL > 0 && !opts.frozenL) {
           blas.saxpy(opts.dim, -opts.lambdaL * weight * opts.lr, syn0, l1, 1, neu1e, 0, 1)
         }
-        blas.saxpy(opts.dim, g, syn1neg, l2, 1, neu1e, 0, 1)
-        if (opts.useBias) {
+
+        if (!opts.frozenL) {
+          blas.saxpy(opts.dim, g, syn1neg, l2, 1, neu1e, 0, 1)
+        }
+
+        if (opts.useBias && !opts.frozenL) {
           neu1e(opts.dim) += g * 1
         }
 
-        if (opts.lambdaR > 0) {
+        if (opts.lambdaR > 0 && !opts.frozenR) {
           blas.saxpy(opts.dim, -opts.lambdaR * weight * opts.lr, syn1neg, l2, 1, syn1neg, l2, 1)
         }
-        blas.saxpy(opts.dim, g, syn0, l1, 1, syn1neg, l2, 1)
-        if (opts.useBias) {
+
+        if (!opts.frozenR) {
+          blas.saxpy(opts.dim, g, syn0, l1, 1, syn1neg, l2, 1)
+        }
+
+        if (opts.useBias && !opts.frozenR) {
           syn1neg(l2 + opts.dim) += g * 1
         }
-        blas.saxpy(opts.vectorSize, 1.0f, neu1e, 0, 1, syn0, l1, 1)
+
+        if (!opts.frozenL) {
+          blas.saxpy(opts.vectorSize, 1.0f, neu1e, 0, 1, syn0, l1, 1)
+        }
       }
       pos += 1
     }

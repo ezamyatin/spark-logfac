@@ -52,7 +52,8 @@ class OptimizerSuite extends MLTest with Logging {
       OptimizerSuite.genData(4096, 32, 16, dim,
         useBias, implicitPrefs = false, random = random)
 
-    val opts = Opts.explicitOpts(dim, useBias, 0.025f, 1f, 0.001f, verbose = false)
+    val opts = Opts.explicitOpts(dim, useBias, 0.025f, 1f, 0.001f, verbose = false,
+      frozenL = false, frozenR = false)
     val userCounts = trainData.groupBy(_._1).mapValues(_.length.toLong)
     val itemCounts = trainData.groupBy(_._2).mapValues(_.length.toLong)
 
@@ -111,7 +112,7 @@ class OptimizerSuite extends MLTest with Logging {
         useBias, implicitPrefs = true, random = random)
 
     val opts = Opts.implicitOpts(dim, useBias, 10, 0f, 0.025f, 1f, 0.001f, 0.1f,
-      verbose = false)
+      verbose = false, frozenL = false, frozenR = false)
     val userCounts = trainData.groupBy(_._1).mapValues(_.length.toLong)
     val itemCounts = trainData.groupBy(_._2).mapValues(_.length.toLong)
 

@@ -1,6 +1,7 @@
 package org.apache.spark.ml.recommendation.logfac.local
 
 object Opts {
+
   def implicitOpts(dim: Int,
                    useBias: Boolean,
                    negative: Int,
@@ -9,9 +10,11 @@ object Opts {
                    lambdaL: Float,
                    lambdaR: Float,
                    gamma: Float,
-                   verbose: Boolean): Opts = {
+                   verbose: Boolean,
+                   frozenL: Boolean,
+                   frozenR: Boolean): Opts = {
     new Opts(dim, useBias, negative, pow, lr,
-      lambdaL, lambdaR, gamma, true, verbose)
+      lambdaL, lambdaR, gamma, true, verbose, frozenL, frozenR)
   }
 
   def explicitOpts(dim: Int,
@@ -19,9 +22,11 @@ object Opts {
                    lr: Float,
                    lambdaL: Float,
                    lambdaR: Float,
-                   verbose: Boolean): Opts = {
+                   verbose: Boolean,
+                   frozenL: Boolean,
+                   frozenR: Boolean): Opts = {
     new Opts(dim, useBias, 0, Float.NaN, lr,
-      lambdaL, lambdaR, Float.NaN, false, verbose)
+      lambdaL, lambdaR, Float.NaN, false, verbose, frozenL, frozenR)
   }
 }
 
@@ -34,9 +39,12 @@ private[ml] class Opts private(val dim: Int,
                                val lambdaR: Float,
                                val gamma: Float,
                                val implicitPref: Boolean,
-                               val verbose: Boolean) extends Serializable {
+                               val verbose: Boolean,
+                               val frozenL: Boolean,
+                               val frozenR: Boolean) extends Serializable {
 
-  if (!implicitPref && (negative != 0 || !gamma.isNaN || !pow.isNaN)) {
+  if (!implicitPref && (negative != 0 || !gamma.isNaN || !pow.isNaN) ||
+        frozenL && frozenR) {
     throw new IllegalArgumentException()
   }
 
