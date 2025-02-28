@@ -346,10 +346,10 @@ object Item2VecModel extends MLReadable[Item2VecModel] {
     override protected def saveImpl(path: String): Unit = {
       val extraMetadata = "rank" -> instance.rank
       DefaultParamsWriter.saveMetadata(instance, path, sparkSession.sparkContext, Some(extraMetadata))
-      val contextPath = new Path(path, "leftFactors").toString
-      instance.leftFactors.write.format("parquet").save(contextPath)
-      val itemPath = new Path(path, "rightFactors").toString
-      instance.rightFactors.write.format("parquet").save(itemPath)
+      val leftPath = new Path(path, "leftFactors").toString
+      instance.leftFactors.write.format("parquet").save(leftPath)
+      val rightPath = new Path(path, "rightFactors").toString
+      instance.rightFactors.write.format("parquet").save(rightPath)
     }
   }
 
@@ -362,10 +362,10 @@ object Item2VecModel extends MLReadable[Item2VecModel] {
       val metadata = DefaultParamsReader.loadMetadata(path, sparkSession.sparkContext, className)
       implicit val format = DefaultFormats
       val rank = (metadata.metadata \ "rank").extract[Int]
-      val contextPath = new Path(path, "leftFactors").toString
-      val leftFactors = sparkSession.read.format("parquet").load(contextPath)
-      val itemPath = new Path(path, "rightFactors").toString
-      val rightFactors = sparkSession.read.format("parquet").load(itemPath)
+      val leftPath = new Path(path, "leftFactors").toString
+      val leftFactors = sparkSession.read.format("parquet").load(leftPath)
+      val rightPath = new Path(path, "rightFactors").toString
+      val rightFactors = sparkSession.read.format("parquet").load(rightPath)
 
       val model = new Item2VecModel(metadata.uid, rank, leftFactors, rightFactors)
 
