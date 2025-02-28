@@ -224,16 +224,16 @@ private[recommendation] trait Item2VecParams extends Item2VecModelParams
  * Model fitted by Item2Vec.
  *
  * @param rank rank of the matrix factorization model
- * @param contextFactors a DataFrame that stores context factors in three columns: `id`, `features`
+ * @param leftFactors a DataFrame that stores context factors in three columns: `id`, `features`
  *                    and `intercept`
- * @param itemFactors a DataFrame that stores item factors in three columns: `id`, `features`
+ * @param rightFactors a DataFrame that stores item factors in three columns: `id`, `features`
  *                    and `intercept`
  */
 class Item2VecModel private[ml] (
                               override val uid: String,
                               val rank: Int,
-                             @transient val contextFactors: DataFrame,
-                             @transient val itemFactors: DataFrame)
+                             @transient val leftFactors: DataFrame,
+                             @transient val rightFactors: DataFrame)
   extends Model[Item2VecModel] with Item2VecModelParams with MLWritable {
 
   /** @group setParam */
@@ -266,7 +266,7 @@ class Item2VecModel private[ml] (
       .map{case (seq: Array[Long], idx: Long) => (idx, seq)}
       .repartition($(numPartitions))
 
-    val factors = contextFactors
+    val factors = leftFactors
       .as[(Long, Array[Float], Float)]
       .rdd
       .map{case (itemId: Long, f: Array[Float], b: Float) => itemId -> (f :+ b)}
@@ -319,7 +319,7 @@ class Item2VecModel private[ml] (
 
 
   override def copy(extra: ParamMap): Item2VecModel = {
-    val copied = new Item2VecModel(uid, rank, contextFactors, itemFactors)
+    val copied = new Item2VecModel(uid, rank, leftFactors, rightFactors)
     copyValues(copied, extra).setParent(parent)
   }
 
@@ -346,10 +346,10 @@ object Item2VecModel extends MLReadable[Item2VecModel] {
     override protected def saveImpl(path: String): Unit = {
       val extraMetadata = "rank" -> instance.rank
       DefaultParamsWriter.saveMetadata(instance, path, sparkSession.sparkContext, Some(extraMetadata))
-      val contextPath = new Path(path, "contextFactors").toString
-      instance.contextFactors.write.format("parquet").save(contextPath)
-      val itemPath = new Path(path, "itemFactors").toString
-      instance.itemFactors.write.format("parquet").save(itemPath)
+      val contextPath = new Path(path, "leftFactors").toString
+      instance.leftFactors.write.format("parquet").save(contextPath)
+      val itemPath = new Path(path, "rightFactors").toString
+      instance.rightFactors.write.format("parquet").save(itemPath)
     }
   }
 
@@ -362,12 +362,12 @@ object Item2VecModel extends MLReadable[Item2VecModel] {
       val metadata = DefaultParamsReader.loadMetadata(path, sparkSession.sparkContext, className)
       implicit val format = DefaultFormats
       val rank = (metadata.metadata \ "rank").extract[Int]
-      val contextPath = new Path(path, "contextFactors").toString
-      val contextFactors = sparkSession.read.format("parquet").load(contextPath)
-      val itemPath = new Path(path, "itemFactors").toString
-      val itemFactors = sparkSession.read.format("parquet").load(itemPath)
+      val contextPath = new Path(path, "leftFactors").toString
+      val leftFactors = sparkSession.read.format("parquet").load(contextPath)
+      val itemPath = new Path(path, "rightFactors").toString
+      val rightFactors = sparkSession.read.format("parquet").load(itemPath)
 
-      val model = new Item2VecModel(metadata.uid, rank, contextFactors, itemFactors)
+      val model = new Item2VecModel(metadata.uid, rank, leftFactors, rightFactors)
 
       metadata.getAndSetParams(model)
       model

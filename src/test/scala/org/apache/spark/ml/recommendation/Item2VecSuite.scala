@@ -47,14 +47,14 @@ class Item2VecSuite extends MLTest with DefaultReadWriteTest with Logging {
       .setFinalStorageLevel("DISK_ONLY")
       .fit(data)
 
-    val left = model.contextFactors
+    val left = model.leftFactors
       .select("id", "features", "intercept")
       .as[(Long, Array[Float], Float)]
       .map{case (id, f, b) =>
         id -> (f, b)
       }.collect().toMap
 
-    val right = model.itemFactors
+    val right = model.rightFactors
       .select("id", "features", "intercept")
       .as[(Long, Array[Float], Float)]
       .map{case (id, f, b) =>
