@@ -1,5 +1,5 @@
 name := "spark-logfac"
-version := "0.1.0"
+version := "0.1.1"
 description := "Logistic Matrix Factorization over Spark"
 organization := "com.github.ezamyatin"
 scalaVersion := "2.12.19"
