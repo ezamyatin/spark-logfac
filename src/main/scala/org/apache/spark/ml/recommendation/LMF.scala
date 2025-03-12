@@ -553,8 +553,8 @@ class LMF( override val uid: String) extends Estimator[LMFModel] with LMFParams
   }
 
   def fit(dataset: Dataset[_],
-          frozenL: Option[Dataset[_]],
-          frozenR: Option[Dataset[_]]): LMFModel = instrumented { instr =>
+          frozenU: Option[Dataset[_]],
+          frozenI: Option[Dataset[_]]): LMFModel = instrumented { instr =>
     transformSchema(dataset.schema)
     import dataset.sparkSession.implicits._
 
@@ -584,10 +584,15 @@ class LMF( override val uid: String) extends Estimator[LMFModel] with LMFParams
         s"checkpointInterval is given.")
     }
 
-    val numExecutors = Try(dataset.sparkSession.sparkContext
-      .getConf.get("spark.executor.instances").toInt).getOrElse($(numPartitions))
-    val numCores = Try(dataset.sparkSession.sparkContext
-      .getConf.get("spark.executor.cores").toInt).getOrElse($(parallelism))
+    val numExecutors = dataset.sparkSession.sparkContext.getConf.getOption("spark.executor.instances")
+      .orElse(dataset.sparkSession.sparkContext.getConf.getOption("spark.dynamicAllocation.maxExecutors"))
+      .map(_.toInt)
+      .getOrElse($(numPartitions))
+
+    val numCores = dataset.sparkSession.sparkContext
+      .getConf.getOption("spark.executor.cores")
+      .map(_.toInt)
+      .getOrElse($(parallelism))
 
     val ratings = dataset
       .select(validatedUsers, validatedItems, validatedLabels, validatedWeights)
@@ -604,10 +609,10 @@ class LMF( override val uid: String) extends Estimator[LMFModel] with LMFParams
       fitIntercept, implicitPrefs, intermediateStorageLevel, finalStorageLevel,
       checkpointInterval)
 
-    val rddFrozenL = frozenL.map(_.select("id", "features", "intercept")
+    val rddFrozenL = frozenU.map(_.select("id", "features", "intercept")
       .as[(Long, Array[Float], Float)].rdd)
 
-    val rddFrozenR = frozenR.map(_.select("id", "features", "intercept")
+    val rddFrozenR = frozenI.map(_.select("id", "features", "intercept")
       .as[(Long, Array[Float], Float)].rdd)
 
     val result = new LMF.Backend($(rank), $(negative), $(maxIter), $(stepSize),
